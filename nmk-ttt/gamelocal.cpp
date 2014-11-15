@@ -31,7 +31,7 @@ void GameLocal::run()
 
         if(nextPlayer >= mK)
             nextPlayer = 0;
-    }while((winner = mNmk->checkWin()) == 0);
+    }while((winner = mNmk->checkWin(c)) == 0);
 
     if(winner == (uint)-1)
         std::cout << "draw" << std::endl;

@@ -61,7 +61,7 @@ void GameServer::clientTurn(GameServerClient *client, QString msg)
         if(mCurrentPlayer >= mK)
             mCurrentPlayer = 0;
 
-        uint winner = mNmk->checkWin();
+        uint winner = mNmk->checkWin(c);
         switch(winner)
         {
         case 0:

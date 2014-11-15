@@ -39,65 +39,68 @@ bool nmk::move(uint c, uint k)
     return move(v, k);
 }
 
-int nmk::checkWin()
+int nmk::checkWin(uint *c)
 {
-    std::vector<uint> playerBuckets[mK];
-    for(size_t i=0; i<pow(mM, mN); i++)
+    uint lastMove = vecToCoord(c);
+    uint d[mN];
+    uint a[mN];
+    uint player = mMap[lastMove];
+    for(uint i=0; i<pow(3, mN); i++)
     {
-        if(mMap[i] != 0)
+        bool first = true;
+        uint k = i;
+        for(uint j=0; j<mN; j++)
         {
-            playerBuckets[mMap[i]-1].push_back(i);
-        }
-    }
-    uint *c_a = new uint[mM];
-    uint *c_b = new uint[mM];
-    uint *d = new uint[mM];
-
-    uint winner = 0;
-
-    for(size_t i=0; i<mK; i++)
-    {
-        if(playerBuckets[i].size() < mM)
-            continue;
-
-        for(auto a=playerBuckets[i].begin(); a!=playerBuckets[i].end() && winner == 0; ++a)
-        {
-            for(auto b=a+1; b!=playerBuckets[i].end() && winner == 0; ++b)
+            d[j] = k%3-1;
+            k /= 3;
+            if(first)
             {
-                uint l = 2;
-                coordToVec(c_a, *a);
-                coordToVec(c_b, *b);
-
-                if(sub(d, c_b, c_a) != 1)
-                    continue;
-
-                for(add(c_b, c_b, d); isValid(c_b); add(c_b, c_b, d))
-                {
-                    // find n
-                    if(std::find(b+1, playerBuckets[i].end(), vecToCoord(c_b)) != playerBuckets[i].end())
-                        l++;
-                    else
-                        break;
-                }
-                for(sub(c_a, c_a, d); isValid(c_a); sub(c_a, c_a, d))
-                {
-                    // find n
-                    if(std::find(b+1, playerBuckets[i].end(), vecToCoord(c_a)) != playerBuckets[i].end())
-                        l++;
-                    else
-                        break;
-                }
-                if(l > mM)
-                    std::cout << "l > mM?!?" << std::cout;
-                if(l == mM)
-                    winner = i+1;
+                if(d[j] == -1)
+                    break;
+                if(d[j] == 1)
+                    first = false;
             }
         }
+        if(first)
+            continue;
+
+        bool stop = false;
+        uint len = 1;
+
+        coordToVec(a, lastMove);
+        while(1)
+        {
+            add(a, a, d);
+            if(!isValid(a))
+                break;
+            if(mMap[vecToCoord(a)] != player)
+            {
+                stop = true;
+                break;
+            }
+            len++;
+        }
+        if(stop)
+            continue;
+
+        coordToVec(a, lastMove);
+        while(1)
+        {
+            sub(a, a, d);
+            if(!isValid(a))
+                break;
+            if(mMap[vecToCoord(a)] != player)
+            {
+                stop = true;
+                break;
+            }
+            len++;
+        }
+        if(len == mM)
+            return player;
+
     }
-    delete[] c_a;
-    delete[] c_b;
-    delete[] d;
-    return winner == 0 ? mMoves == pow(mM, mN) ? -1 : 0 : winner;
+    return mMoves == pow(mM, mN) ? -1 : 0;
 }
 
 void nmk::coordToVec(uint *v, uint c)

@@ -11,7 +11,7 @@ public:
     bool move(uint *c, uint k);
     bool move(uint c, uint k);
 
-    int checkWin();
+    int checkWin(uint *lastMove);
 
 private:
     uint *mMap;
