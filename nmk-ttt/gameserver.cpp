@@ -62,11 +62,11 @@ void GameServer::processMsg(QString msg, QTcpSocket *socket)
         {
             t[i] = msg.section(' ', i+2, i+2).toUInt();
         }
-        if((error = mNmk->turn(t, session))==nmk::ERROR::NONE)
-            socket->write("t\n");
-        break;
+        error = mNmk->turn(t, session);
     }
-
+    case 'w': // check winner
+        socket->write(QString("w %1\n").arg(mNmk->getWinner()).toUtf8());
+        break;
     }
 
     if(error != nmk::ERROR::NONE)

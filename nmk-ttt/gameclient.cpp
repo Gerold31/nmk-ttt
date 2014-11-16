@@ -36,8 +36,6 @@ void GameClient::run()
 
     }
 
-    std::cout << n << std::endl;
-
     char c = 'h';
     bool expectAnswer;
     while(1)
@@ -50,6 +48,7 @@ void GameClient::run()
             std::cout << "\tn <Name>                 - register new player" << std::endl;
             std::cout << "\ts                        - get current game state" << std::endl;
             std::cout << "\tt <session> <x1> .. <xn> - make a turn" << std::endl;
+            std::cout << "\tw                        - check if somebody won" << std::endl;
             std::cout << "\tq                        - quit" << std::endl;
             std::cout << "\th                        - show this" << std::endl;
             expectAnswer = false;
@@ -111,8 +110,14 @@ void GameClient::run()
                     case 'e':
                         std::cout << "Error: " << msg.section(' ', 1, 1).toStdString();
                         break;
-                    case 't':
-                        std::cout << "Turn successfull" << std::endl;
+                    case 'w':
+                        if(msg.section(' ', 1, 1).toUInt() == 0)
+                            std::cout << "No Winner" << std::endl;
+                        else if(msg.section(' ', 1, 1).toUInt() == (uint)-1)
+                            std::cout << "Draw!" << std::endl;
+                        else
+                            std::cout << "Player " << msg.section(' ', 1, 1).toUInt() << " won!" << std::endl;
+
                         break;
                     default:
                         std::cout << "Unknown reply " << msg.toStdString();

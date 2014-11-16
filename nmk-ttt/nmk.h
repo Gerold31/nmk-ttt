@@ -19,6 +19,7 @@ public:
         VECTOR_OUT_OF_BOUNDS,
         PLACE_TAKEN,
         INVALID_SESSION,
+        GAME_FINISHED,
     };
 
     nmk(uint n, uint m, uint k, QString name);
@@ -29,8 +30,7 @@ public:
     ERROR turn(uint *t, uint session);
     ERROR getState(QIODevice *stream);
 
-
-    int checkWin(uint *lastMove);
+    uint getWinner(){return mWinner;}
 
     uint getN(){return mN;}
     uint getM(){return mM;}
@@ -43,12 +43,15 @@ private:
     const QString mName;
     uint mMoves;
     uint mCurrentPlayer;
+    uint mWinner;
 
     QFile mFile;
 
     void coordToVec(uint *v, uint c);
     uint vecToCoord(uint *v);
     bool isValid(uint *v);
+
+    int checkWin(uint *lastMove);
 
     // l = rl - rr
     uint sub(uint *l, uint *rl, uint *rr);

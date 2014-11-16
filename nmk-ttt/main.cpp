@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    srand(time(0));
+
     Game *g;
 
     while(1)

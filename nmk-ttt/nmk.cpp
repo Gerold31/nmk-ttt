@@ -33,7 +33,7 @@ nmk::nmk(uint n, uint m, uint k, QString name) :
         mFile.flush();
         mFile.close();
     }
-    mCurrentPlayer = mMoves = 0;
+    mCurrentPlayer = mMoves = mWinner = 0;
 }
 
 nmk::ERROR nmk::addPlayer(QString name, uint &id, uint &session)
@@ -87,6 +87,8 @@ nmk::ERROR nmk::turn(uint *t, uint session)
         return ERROR::NOT_YOUR_TURN;
     if(mPlayers.size() != mK)
         return ERROR::GAME_NOT_RUNNING;
+    if(mWinner != 0)
+        return ERROR::GAME_FINISHED;
 
     uint coord = vecToCoord(t);
 
@@ -110,6 +112,16 @@ nmk::ERROR nmk::turn(uint *t, uint session)
     for(uint i=0; i<mN; i++)
         out << " " << t[i];
     out << "\n";
+
+    mWinner = checkWin(t);
+    if(mWinner == -1)
+    {
+        out << "w 0\n";
+    }else if(mWinner != 0)
+    {
+        out << "w " << mWinner << "\n";
+    }
+
     mFile.flush();
     mFile.close();
 
