@@ -7,8 +7,8 @@
 #include "nmk.h"
 #include "gameserverclient.h"
 
-GameServer::GameServer(uint n, uint m, uint k, unsigned short port):
-    Game(new nmk(n, m, k)), mN(n), mM(m), mK(k)
+GameServer::GameServer(uint n, uint m, uint k, QString name, unsigned short port):
+    Game(new nmk(n, m, k, name))
 {
     mServer = new QTcpServer();
     mServer->listen(QHostAddress::Any, port);
@@ -23,80 +23,55 @@ void GameServer::run()
 void GameServer::incomingConnection()
 {
     QTcpSocket *socket = mServer->nextPendingConnection();
-    if(mClients.size() == mK)
-    {
-        socket->disconnectFromHost();
-    }else
-    {
-        GameServerClient *c = new GameServerClient(socket, this);
-        mClients.push_back(c);
-        sendTo(c, QString("p %1").arg(mClients.size()));
-        if(mClients.size() == mK)
-        {
-            sendTo(mClients.at(0), QString("r %1").arg(mN));
-            mClients.at(0)->setState(GameServerClient::STATE::TURN);
-        }
-        else
-            sendToAll(QString("c %1").arg(mK - mClients.size()));
-    }
 
+    socket->write(QString("%1\n").arg(mNmk->getN()).toUtf8());
+    socket->flush();
+
+    new GameServerClient(socket, this);
 }
 
-void GameServer::clientTurn(GameServerClient *client, QString msg)
+void GameServer::processMsg(QString msg, QTcpSocket *socket)
 {
-    if(mClients[mCurrentPlayer] != client)
-        return;
-
-    uint c[mN];
     msg = msg.replace('\n', "");
-    for(size_t i=0; i<mN; i++)
+
+    nmk::ERROR error;
+
+    switch(msg.at(0).toLatin1())
     {
-        c[i] = msg.section(' ', i, i).toUInt();
+    case 'n': // register new player
+    {
+        QString name = msg.section(' ', 1 , 1);
+        uint id, session;
+        if((error = mNmk->addPlayer(name, id, session))==nmk::ERROR::NONE)
+            socket->write(QString("n %1 %2\n").arg(id).arg(session).toUtf8());
+
+        break;
     }
-
-    if(mNmk->move(c, mCurrentPlayer+1))
+    case 's': // request game state
     {
-        sendToAll(QString("m %1 %2").arg(mCurrentPlayer+1).arg(msg));
-        mCurrentPlayer++;
-        if(mCurrentPlayer >= mK)
-            mCurrentPlayer = 0;
-
-        uint winner = mNmk->checkWin(c);
-        switch(winner)
+        socket->write(QString("s\n").toUtf8());
+        error = mNmk->getState(socket);
+        socket->write(QString("sx\n").toUtf8());
+        break;
+    }
+    case 't': // turn
+    {
+        uint session = msg.section(' ', 1, 1).toUInt();
+        uint t[mNmk->getN()];
+        for(uint i=0; i<mNmk->getN(); i++)
         {
-        case 0:
-            sendTo(mClients[mCurrentPlayer], QString("r %1").arg(mN));
-            mClients[mCurrentPlayer]->setState(GameServerClient::STATE::TURN);
-            break;
-        case (uint)-1:
-            sendToAll("d");
-        default:
-            sendToAll(QString("w %1").arg(winner));
-            for(auto i = mClients.begin(); i!= mClients.end(); ++i)
-            {
-                (*i)->getSocket()->waitForBytesWritten();
-                (*i)->getSocket()->disconnectFromHost();
-                QCoreApplication::quit();
-            }
+            t[i] = msg.section(' ', i+2, i+2).toUInt();
         }
-
-    }else
-    {
-        sendTo(client, "i");
-        sendTo(client, QString("r %1").arg(mN));
-        client->setState(GameServerClient::STATE::TURN);
+        if((error = mNmk->turn(t, session))==nmk::ERROR::NONE)
+            socket->write("t\n");
+        break;
     }
-}
 
-void GameServer::sendTo(GameServerClient *c, QString msg)
-{
-    c->getSocket()->write((msg + "\n").toUtf8());
-}
-
-void GameServer::sendToAll(QString msg)
-{
-    for(auto i = mClients.begin(); i!= mClients.end(); ++i)
-    {
-        (*i)->getSocket()->write((msg + "\n").toUtf8());
     }
+
+    if(error != nmk::ERROR::NONE)
+    {
+        socket->write(QString("e %1\n").arg((int)error).toUtf8());
+    }
+    socket->flush();
 }

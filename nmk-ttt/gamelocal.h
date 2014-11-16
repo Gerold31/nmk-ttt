@@ -3,10 +3,12 @@
 
 #include "game.h"
 
+#include <QString>
+
 class GameLocal : public Game
 {
 public:
-    GameLocal(uint n, uint m, uint k);
+    GameLocal(uint n, uint m, uint k, QString name);
     void run();
 
 private:

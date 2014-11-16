@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include <QTextStream>
+
 uint pow(uint b, uint e)
 {
     uint r = 1;
@@ -16,27 +18,102 @@ uint pow(uint b, uint e)
     return r;
 }
 
-nmk::nmk(uint n, uint m, uint k) :
-    mN(n), mM(m), mK(k)
+nmk::nmk(uint n, uint m, uint k, QString name) :
+    mN(n), mM(m), mK(k), mName(name)
 {
     mMap = new uint[pow(m, n)];
+    mFile.setFileName(name + ".nmk");
+    mFile.open(QIODevice::Truncate | QIODevice::WriteOnly | QIODevice::Text);
+    if(mFile.isOpen())
+    {
+        QTextStream out(&mFile);
+        out << mN << "\n";
+        out << mM << "\n";
+        out << mK << "\n";
+        mFile.flush();
+        mFile.close();
+    }
+    mCurrentPlayer = mMoves = 0;
 }
 
-bool nmk::move(uint *c, uint k)
+nmk::ERROR nmk::addPlayer(QString name, uint &id, uint &session)
 {
-    int coord = vecToCoord(c);
-    if(mMap[coord] != 0 || !isValid(c))
-        return false;
-    mMap[coord] = k;
+    if(mPlayers.size() == mK)
+        return ERROR::SERVER_FULL;
+    for(auto i=mPlayers.begin(); i!= mPlayers.end(); i++)
+    {
+        if((*i).second->getName() == name)
+            return ERROR::NAME_TAKEN;
+    }
+
+    mFile.open(QIODevice::Append | QIODevice::WriteOnly | QIODevice::Text);
+    if(!mFile.isOpen())
+        return ERROR::INTERNAL_ERROR;
+
+    QFile f(mName + "_" + name + ".session");
+    f.open(QIODevice::Truncate | QIODevice::WriteOnly);
+    if(!f.isOpen())
+        return ERROR::INTERNAL_ERROR;
+
+    do
+    {
+        session = rand()%8 | rand()%8 << 8 | rand()%8 << 16 | rand()%8 << 24;
+    }while(mPlayers.count(session) != 0);
+
+    id = mPlayers.size() + 1;
+    mPlayers[session] = new Player(name, id, session);
+
+    f.write(QString().setNum(session).toUtf8());
+    f.close();
+
+
+    QTextStream out(&mFile);
+    out << id << " " << name << "\n";
+
+    mFile.flush();
+    mFile.close();
+
+    return ERROR::NONE;
+}
+
+nmk::ERROR nmk::turn(uint *t, uint session)
+{
+    if(mPlayers.count(session) == 0)
+        return ERROR::INVALID_SESSION;
+
+    uint player = mPlayers[session]->getID();
+
+    if(mCurrentPlayer != player-1)
+        return ERROR::NOT_YOUR_TURN;
+    if(mPlayers.size() != mK)
+        return ERROR::GAME_NOT_RUNNING;
+
+    uint coord = vecToCoord(t);
+
+    if(mMap[coord] != 0)
+        return ERROR::PLACE_TAKEN;
+    if(!isValid(t))
+        return ERROR::VECTOR_OUT_OF_BOUNDS;
+
+    mFile.open(QIODevice::Append | QIODevice::WriteOnly | QIODevice::Text);
+    if(!mFile.isOpen())
+        return ERROR::INTERNAL_ERROR;
+
+    mMap[coord] = player;
+    mCurrentPlayer++;
+    if(mCurrentPlayer == mK)
+        mCurrentPlayer = 0;
     mMoves++;
-    return true;
-}
 
-bool nmk::move(uint c, uint k)
-{
-    uint v[mK];
-    coordToVec(v, c);
-    return move(v, k);
+    QTextStream out(&mFile);
+    out << player;
+    for(uint i=0; i<mN; i++)
+        out << " " << t[i];
+    out << "\n";
+    mFile.flush();
+    mFile.close();
+
+    return ERROR::NONE;
 }
 
 int nmk::checkWin(uint *c)
@@ -101,6 +178,18 @@ int nmk::checkWin(uint *c)
 
     }
     return mMoves == pow(mM, mN) ? -1 : 0;
+}
+
+nmk::ERROR nmk::getState(QIODevice *stream)
+{
+    mFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    if(!mFile.isOpen())
+        return ERROR::INTERNAL_ERROR;
+
+    stream->write(mFile.readAll());
+
+    mFile.close();
+    return ERROR::NONE;
 }
 
 void nmk::coordToVec(uint *v, uint c)

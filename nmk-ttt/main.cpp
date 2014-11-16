@@ -21,13 +21,16 @@ int main(int argc, char *argv[])
         uint n, m, k;
         if(mode == 0)
         {
+            std::string name;
+            std::cout << "Name: ";
+            std::cin >> name;
             std::cout << "n (number of dimensions): ";
             std::cin >> n;
             std::cout << "m (size of dimensions): ";
             std::cin >> m;
             std::cout << "k (number of players): ";
             std::cin >> k;
-            g = new GameLocal(n, m, k);
+            g = new GameLocal(n, m, k, name.c_str());
             break;
         }
         if(mode == 1)
@@ -44,6 +47,9 @@ int main(int argc, char *argv[])
         if(mode == 2)
         {
             unsigned short port;
+            std::string name;
+            std::cout << "Name: ";
+            std::cin >> name;
             std::cout << "n (number of dimensions): ";
             std::cin >> n;
             std::cout << "m (size of dimensions): ";
@@ -52,7 +58,7 @@ int main(int argc, char *argv[])
             std::cin >> k;
             std::cout << "Port: ";
             std::cin >> port;
-            g = new GameServer(n, m, k, port);
+            g = new GameServer(n, m, k, name.c_str(), port);
             break;
         }
     }

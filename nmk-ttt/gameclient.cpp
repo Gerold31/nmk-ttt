@@ -20,57 +20,110 @@ void GameClient::run()
         exit(-1);
     }
 
-    while(mSocket->isOpen())
+    uint n = -1;
+    while(n == -1)
     {
-        mSocket->waitForReadyRead(-1);
-        while(mSocket->canReadLine())
+        if(!mSocket->waitForReadyRead())
         {
-            QString msg = mSocket->readLine();
-            msg = msg.replace('\n', "");
-            switch(msg.at(0).toLatin1())
+            std::cout << "Connection timed out" << std::endl;
+            exit(-1);
+        }
+        if(mSocket->canReadLine())
+        {
+            QString line = mSocket->readLine();
+            n = line.toUInt();
+        }
+
+    }
+
+    std::cout << n << std::endl;
+
+    char c = 'h';
+    bool expectAnswer;
+    while(1)
+    {
+        expectAnswer = true;
+        switch(c)
+        {
+        case 'h':
+            std::cout << "Possible commands:" << std::endl;
+            std::cout << "\tn <Name>                 - register new player" << std::endl;
+            std::cout << "\ts                        - get current game state" << std::endl;
+            std::cout << "\tt <session> <x1> .. <xn> - make a turn" << std::endl;
+            std::cout << "\tq                        - quit" << std::endl;
+            std::cout << "\th                        - show this" << std::endl;
+            expectAnswer = false;
+            break;
+        case 'n':
+        {
+            std::string name;
+            std::cin >> name;
+            mSocket->write((QString("n ") + name.c_str() + "\n").toUtf8());
+            break;
+        }
+        case 's':
+            mSocket->write(QString("s\n").toUtf8());
+            break;
+        case 't':
+        {
+            QString msg = "t";
+            uint t;
+            for(uint i=0; i<n+1; i++)
             {
-            case 'c':
-                std::cout << "Wating for " << msg.section(' ', 1, 1).toStdString() << " more players to connect" << std::endl;
-                break;
-            case 'p':
-                std::cout << "You are Player " << msg.section(' ', 1, 1).toStdString() << std::endl;
-                break;
-            case 'w':
-                std::cout << "Player " << msg.section(' ', 1, 1).toStdString() << " won!" << std::endl;
-                mSocket->disconnectFromHost();
-                mSocket->close();
-                break;
-            case 'd':
-                std::cout << "Draw!" << std::endl;
-                mSocket->disconnectFromHost();
-                mSocket->close();
-                break;
-            case 'r':
-            {
-                std::cout << "Your turn" << std::endl;
-                uint n = msg.section(' ', 1, 1).toUInt();
-                msg = "";
-                for(uint i=0; i<n; i++)
-                {
-                    uint c;
-                    std::cin >> c;
-                    msg += QString().setNum(c) + " ";
-                }
-                msg += "\n";
-                mSocket->write(msg.toUtf8());
-                mSocket->waitForBytesWritten();
-                break;
+                std::cin >> t;
+                msg += " " + QString().setNum(t);
             }
-            case 'i':
-                std::cout << "Invalid Turn!" << std::endl;
-                break;
-            case 'm':
-                std::cout << "Player " << msg.section(' ', 1, 1).toStdString() << "'s turn: " << msg.section(' ', 2).toStdString() << std::endl;
-                break;
-            default:
-                std::cout << "Unknown command " << msg.toStdString() << std::endl;
+            mSocket->write((msg + "\n").toUtf8());
+            break;
+        }
+        case 'q':
+            exit(0);
+        }
+        mSocket->flush();
+        bool multilineAnswer = false;
+        while(expectAnswer)
+        {
+            if(!mSocket->waitForReadyRead())
+            {
+                std::cout << "Connection timed out" << std::endl;
+                exit(-1);
+            }
+            while(mSocket->canReadLine())
+            {
+                QString msg = mSocket->readLine();
+
+                if(multilineAnswer)
+                {
+                    if(msg.startsWith("sx"))
+                        multilineAnswer = false;
+                    else
+                        std::cout << msg.toStdString();
+                }else
+                {
+                    switch(msg.at(0).toLatin1())
+                    {
+                    case 'n':
+                        std::cout << "You are Player " << msg.section(' ', 1, 1).toStdString() << " with session " << msg.section(' ', 2, 2).toStdString();
+                        break;
+                    case 's':
+                        multilineAnswer = true;
+                        break;
+                    case 'e':
+                        std::cout << "Error: " << msg.section(' ', 1, 1).toStdString();
+                        break;
+                    case 't':
+                        std::cout << "Turn successfull" << std::endl;
+                        break;
+                    default:
+                        std::cout << "Unknown reply " << msg.toStdString();
+                        break;
+                    }
+                }
+                if(!multilineAnswer)
+                    expectAnswer = false;
             }
         }
+        std::cin >> c;
     }
     exit(0);
 }

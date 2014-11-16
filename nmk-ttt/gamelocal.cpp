@@ -6,8 +6,8 @@
 
 #include "QCoreApplication"
 
-GameLocal::GameLocal(uint n, uint m, uint k):
-    Game(new nmk(n, m, k)), mN(n), mM(m), mK(k)
+GameLocal::GameLocal(uint n, uint m, uint k, QString name):
+    Game(new nmk(n, m, k, name)), mN(n), mM(m), mK(k)
 {
 }
 
@@ -27,7 +27,7 @@ void GameLocal::run()
             {
                 std::cin >> c[i];
             }
-        }while(!mNmk->move(c, nextPlayer));
+        }while(mNmk->turn(c, nextPlayer) != nmk::ERROR::NONE);
 
         if(nextPlayer >= mK)
             nextPlayer = 0;
