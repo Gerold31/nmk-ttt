@@ -14,8 +14,6 @@ class GameServer : public QObject, public Game
 public:
     GameServer(uint n, uint m, uint k, QString name, unsigned short port);
 
-    void run();
-
     void processMsg(QString msg, QTcpSocket *socket);
 
 private slots:
@@ -24,6 +22,8 @@ private slots:
 private:
     uint mCurrentPlayer;
     QTcpServer *mServer;
+
+    void run();
 
 };
 

@@ -12,7 +12,7 @@ GameServer::GameServer(uint n, uint m, uint k, QString name, unsigned short port
 {
     mServer = new QTcpServer();
     mServer->listen(QHostAddress::Any, port);
-    connect(mServer, SIGNAL(newConnection()), this, SLOT(incomingConnection()));
+    QObject::connect(mServer, SIGNAL(newConnection()), this, SLOT(incomingConnection()));
     mCurrentPlayer = 0;
 }
 
@@ -26,6 +26,7 @@ void GameServer::incomingConnection()
 
     socket->write(QString("%1\n").arg(mNmk->getN()).toUtf8());
     socket->flush();
+    socket->waitForBytesWritten();
 
     new GameServerClient(socket, this);
 }
@@ -34,7 +35,7 @@ void GameServer::processMsg(QString msg, QTcpSocket *socket)
 {
     msg = msg.replace('\n', "");
 
-    nmk::ERROR error;
+    nmk::ERROR error = nmk::ERROR::NONE;
 
     switch(msg.at(0).toLatin1())
     {
@@ -63,6 +64,7 @@ void GameServer::processMsg(QString msg, QTcpSocket *socket)
             t[i] = msg.section(' ', i+2, i+2).toUInt();
         }
         error = mNmk->turn(t, session);
+        break;
     }
     case 'w': // check winner
         socket->write(QString("w %1\n").arg(mNmk->getWinner()).toUtf8());
@@ -74,4 +76,5 @@ void GameServer::processMsg(QString msg, QTcpSocket *socket)
         socket->write(QString("e %1\n").arg((int)error).toUtf8());
     }
     socket->flush();
+    socket->waitForBytesWritten();
 }

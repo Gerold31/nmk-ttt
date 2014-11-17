@@ -33,17 +33,21 @@ int main(int argc, char *argv[])
             std::cout << "k (number of players): ";
             std::cin >> k;
             g = new GameLocal(n, m, k, name.c_str());
+            g->run();
             break;
         }
         if(mode == 1)
         {
-            std::string ip;
+            std::string ip, sfile;
             unsigned short port;
             std::cout << "IP: ";
             std::cin >> ip;
             std::cout << "Port: ";
             std::cin >> port;
-            g = new GameClient(ip.c_str(), port);
+            std::cout << "Session file: ";
+            std::cin >> sfile;
+            g = new GameClient(ip.c_str(), port, sfile.c_str());
+            ((GameClient *)g)->start();
             break;
         }
         if(mode == 2)
@@ -64,8 +68,6 @@ int main(int argc, char *argv[])
             break;
         }
     }
-
-    g->run();
 
     return a.exec();
 }

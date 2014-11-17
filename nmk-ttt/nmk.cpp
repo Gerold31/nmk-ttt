@@ -114,7 +114,7 @@ nmk::ERROR nmk::turn(uint *t, uint session)
     out << "\n";
 
     mWinner = checkWin(t);
-    if(mWinner == -1)
+    if(mWinner == (uint)-1)
     {
         out << "w 0\n";
     }else if(mWinner != 0)
@@ -144,7 +144,7 @@ int nmk::checkWin(uint *c)
             k /= 3;
             if(first)
             {
-                if(d[j] == -1)
+                if(d[j] == (uint)-1)
                     break;
                 if(d[j] == 1)
                     first = false;

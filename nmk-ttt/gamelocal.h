@@ -9,10 +9,10 @@ class GameLocal : public Game
 {
 public:
     GameLocal(uint n, uint m, uint k, QString name);
-    void run();
 
 private:
     const uint mN, mM, mK;
+    void run();
 };
 
 #endif // GAMELOCAL_H
