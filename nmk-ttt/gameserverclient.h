@@ -11,8 +11,11 @@ class GameServerClient : public QObject
 public:
     GameServerClient(QTcpSocket *socket, GameServer *server);
 
+    QTcpSocket *getSocket(){return mSocket;}
+
 private slots:
     void readyRead();
+    void disconnected();
 
 private:
     QTcpSocket *mSocket;

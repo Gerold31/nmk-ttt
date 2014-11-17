@@ -9,7 +9,7 @@ GameServerClient::GameServerClient(QTcpSocket *socket, GameServer *server)
     mSocket = socket;
     mServer = server;
     connect(mSocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
-    connect(mSocket, SIGNAL(disconnected()), this, SLOT(deleteLater()));
+    connect(mSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
 }
 
 void GameServerClient::readyRead()
@@ -18,4 +18,10 @@ void GameServerClient::readyRead()
     {
         mServer->processMsg(mSocket->readLine(), mSocket);
     }
+}
+
+void GameServerClient::disconnected()
+{
+    mServer->removeClient(this);
+    deleteLater();
 }

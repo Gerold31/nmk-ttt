@@ -37,6 +37,9 @@ public:
     uint getK(){return mK;}
     QString getName(){return mName;}
 
+    uint getPlayerCount(){return mPlayers.size();}
+    uint getCurrentPlayer(){return mCurrentPlayer+1;}
+
     static const char *errorToString(ERROR e);
 
 private:

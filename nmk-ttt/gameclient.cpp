@@ -44,7 +44,8 @@ void GameClient::run()
         case 'h':
             std::cout << "Possible commands:" << std::endl;
             std::cout << "\tn <Name>       - register new player" << std::endl;
-            std::cout << "\ts              - get current game state" << std::endl;
+            std::cout << "\ti              - get current game state" << std::endl;
+            std::cout << "\ts              - get full turn history" << std::endl;
             std::cout << "\tt <x1> .. <xn> - make a turn" << std::endl;
             std::cout << "\tw              - check if somebody won" << std::endl;
             std::cout << "\tq              - quit" << std::endl;
@@ -57,6 +58,9 @@ void GameClient::run()
             mSocket->write((QString("n ") + name.c_str() + "\n").toUtf8());
             break;
         }
+        case 'i':
+            mSocket->write(QString("i\n").toUtf8());
+            break;
         case 's':
             mSocket->write(QString("s\n").toUtf8());
             break;
@@ -90,7 +94,7 @@ void GameClient::processMsg()
 {
     while(mSocket->canReadLine())
     {
-        QString msg = mSocket->readLine();
+        QString msg = mSocket->readLine().replace('\n', "");
 
         if(mN == (uint)-1)
         {
@@ -101,9 +105,12 @@ void GameClient::processMsg()
         if(mMultilineAnswer)
         {
             if(msg.startsWith("sx"))
+            {
+                std::cout << "==== END ====" << std::endl;
                 mMultilineAnswer = false;
+            }
             else
-                std::cout << msg.toStdString();
+                std::cout << msg.toStdString() << std::endl;
         }else
         {
             switch(msg.at(0).toLatin1())
@@ -111,7 +118,7 @@ void GameClient::processMsg()
             case 'n':
             {
                 std::cout << "You are Player " << msg.section(' ', 1, 1).toStdString() << std::endl;
-                mSession = msg.section(' ', 2, 2).replace('\n', "");
+                mSession = msg.section(' ', 2, 2);
 
                 QFile f(mSessionFileName);
                 f.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -128,6 +135,7 @@ void GameClient::processMsg()
                 break;
             case 's':
                 mMultilineAnswer = true;
+                std::cout << "====START====" << std::endl;
                 break;
             case 'e':
                 std::cout << "Error: " << nmk::errorToString((nmk::ERROR)msg.section(' ', 1, 1).toInt()) << std::endl;
@@ -141,8 +149,14 @@ void GameClient::processMsg()
                     std::cout << "Player " << msg.section(' ', 1, 1).toUInt() << " won!" << std::endl;
 
                 break;
+            case 'p':
+                std::cout << "Waiting for " << msg.section(' ', 1, 1).toStdString() << " more Players" << std::endl;
+                break;
+            case 't':
+                std::cout << "Player " << msg.section(' ', 1, 1).toStdString() << "'s turn" << std::endl;
+                break;
             default:
-                std::cout << "Unknown reply " << msg.toStdString();
+                std::cout << "Unknown reply " << msg.toStdString() << std::endl;
                 break;
             }
         }

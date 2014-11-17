@@ -15,6 +15,7 @@ public:
     GameServer(uint n, uint m, uint k, QString name, unsigned short port);
 
     void processMsg(QString msg, QTcpSocket *socket);
+    void removeClient(GameServerClient *client);
 
 private slots:
     void incomingConnection();
@@ -22,8 +23,10 @@ private slots:
 private:
     uint mCurrentPlayer;
     QTcpServer *mServer;
+    std::vector<GameServerClient *> mClients;
 
     void run();
+    void informAllClients();
 
 };
 
