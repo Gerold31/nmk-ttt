@@ -29,7 +29,7 @@ void GameLocal::run()
         {
             if(e != nmk::ERROR::NONE)
             {
-                std::cout << "Error " << (int)e << std::endl;
+                std::cout << "Error: " << nmk::errorToString(e) << std::endl;
             }
             std::cout << "Player " << nextPlayer+1 << "'s turn" << std::endl;
 

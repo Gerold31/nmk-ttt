@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "nmk.h"
+
 GameClient::GameClient(QString ip, unsigned short port, QString sessionFile) :
     Game(nullptr)
 {
@@ -128,7 +130,7 @@ void GameClient::processMsg()
                 mMultilineAnswer = true;
                 break;
             case 'e':
-                std::cout << "Error: " << msg.section(' ', 1, 1).toStdString();
+                std::cout << "Error: " << nmk::errorToString((nmk::ERROR)msg.section(' ', 1, 1).toInt()) << std::endl;
                 break;
             case 'w':
                 if(msg.section(' ', 1, 1).toUInt() == 0)

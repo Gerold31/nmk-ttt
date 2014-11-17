@@ -278,3 +278,31 @@ uint nmk::add(uint *l, uint *rl, uint *rr)
     //std::cout << "\b\b), max = " << max << std::endl;
     return max;
 }
+
+const char *nmk::errorToString(ERROR e)
+{
+    switch(e)
+    {
+    case ERROR::NONE:
+        return "";
+    case ERROR::SERVER_FULL:
+        return "Server full";
+    case ERROR::NAME_TAKEN:
+        return "Name taken";
+    case ERROR::INTERNAL_ERROR:
+        return "Internal error";
+    case ERROR::NOT_YOUR_TURN:
+        return "Not your turn";
+    case ERROR::GAME_NOT_RUNNING:
+        return "Game not running";
+    case ERROR::VECTOR_OUT_OF_BOUNDS:
+        return "Vector out of bounds";
+    case ERROR::PLACE_TAKEN:
+        return "Place taken";
+    case ERROR::INVALID_SESSION:
+        return "Invalid session";
+    case ERROR::GAME_FINISHED:
+        return "Game finished";
+    }
+    return "";
+}

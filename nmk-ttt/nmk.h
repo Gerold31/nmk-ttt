@@ -37,6 +37,8 @@ public:
     uint getK(){return mK;}
     QString getName(){return mName;}
 
+    static const char *errorToString(ERROR e);
+
 private:
     uint *mMap;
     const uint mN, mM, mK;
