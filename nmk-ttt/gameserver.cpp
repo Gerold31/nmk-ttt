@@ -13,7 +13,14 @@ GameServer::GameServer(uint n, uint m, uint k, QString name, unsigned short port
     mServer = new QTcpServer();
     mServer->listen(QHostAddress::Any, port);
     QObject::connect(mServer, SIGNAL(newConnection()), this, SLOT(incomingConnection()));
-    mCurrentPlayer = 0;
+}
+
+GameServer::GameServer(QString name, unsigned short port):
+    Game(new nmk(name))
+{
+    mServer = new QTcpServer();
+    mServer->listen(QHostAddress::Any, port);
+    QObject::connect(mServer, SIGNAL(newConnection()), this, SLOT(incomingConnection()));
 }
 
 void GameServer::run()

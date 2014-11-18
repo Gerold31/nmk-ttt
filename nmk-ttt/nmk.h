@@ -20,6 +20,7 @@ public:
         PLACE_TAKEN,
         INVALID_SESSION,
         GAME_FINISHED,
+        CORRUPT_SAVE_GAME,
     };
 
     nmk(uint n, uint m, uint k, QString name);
@@ -44,7 +45,7 @@ public:
 
 private:
     uint *mMap;
-    const uint mN, mM, mK;
+    uint mN, mM, mK;
     const QString mName;
     uint mMoves;
     uint mCurrentPlayer;

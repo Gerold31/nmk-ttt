@@ -21,7 +21,7 @@ uint pow(uint b, uint e)
 nmk::nmk(uint n, uint m, uint k, QString name) :
     mN(n), mM(m), mK(k), mName(name)
 {
-    mMap = new uint[pow(m, n)];
+    mMap = new uint[pow(m, n)]{0};
     mFile.setFileName(name + ".nmk");
     mFile.open(QIODevice::Truncate | QIODevice::WriteOnly | QIODevice::Text);
     if(mFile.isOpen())
@@ -34,6 +34,64 @@ nmk::nmk(uint n, uint m, uint k, QString name) :
         mFile.close();
     }
     mCurrentPlayer = mMoves = mWinner = 0;
+}
+
+nmk::nmk(QString name) :
+    mName(name)
+{
+    mCurrentPlayer = mMoves = mWinner = 0;
+    mFile.setFileName(name + ".nmk");
+    mFile.open(QIODevice::Truncate | QIODevice::ReadOnly | QIODevice::Text);
+    if(mFile.isOpen())
+    {
+        QTextStream in(&mFile);
+        in >> mN;
+        in >> mM;
+        in >> mK;
+        mMap = new uint[pow(mM, mN)]{0};
+        while(!mFile.atEnd())
+        {
+            if(mPlayers.size() < mK)
+            {
+                uint id, session;
+                QString playerName;
+                in >> id >> playerName;
+                QFile f(name + "_" + playerName + ".session");
+                if(f.isOpen())
+                    session = f.readLine().replace('\n', "").toUInt();
+                else
+                    throw ERROR::INTERNAL_ERROR;
+                mPlayers[session] = new Player(playerName, id, session);
+            }else
+            {
+                uint id, t[mN], c;
+                in >> id;
+                for(uint i=0; i<mN; i++)
+                    in >> t[i];
+                if(id != mCurrentPlayer+1)
+                    throw ERROR::CORRUPT_SAVE_GAME;
+                if(!isValid(t))
+                    throw ERROR::CORRUPT_SAVE_GAME;
+                c = vecToCoord(t);
+                if(mMap[c] != 0)
+                    throw ERROR::CORRUPT_SAVE_GAME;
+
+                mMap[c] = id;
+                mMoves++;
+                mCurrentPlayer++;
+                if(mCurrentPlayer == mK)
+                    mCurrentPlayer = 0;
+
+                mWinner = checkWin(t);
+                if(mWinner != 0)
+                    break;
+            }
+        }
+    }else
+    {
+        throw ERROR::INTERNAL_ERROR;
+    }
+    mFile.close();
 }
 
 nmk::ERROR nmk::addPlayer(QString name, uint &id, uint &session)
@@ -303,6 +361,8 @@ const char *nmk::errorToString(ERROR e)
         return "Invalid session";
     case ERROR::GAME_FINISHED:
         return "Game finished";
+    case ERROR::CORRUPT_SAVE_GAME:
+        return "Corrupt save game";
     }
     return "";
 }

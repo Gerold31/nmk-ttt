@@ -54,17 +54,28 @@ int main(int argc, char *argv[])
         {
             unsigned short port;
             std::string name;
+            char c;
+            std::cout << "Load game? [Y/n]: ";
+            std::cin >> c;
             std::cout << "Name: ";
             std::cin >> name;
-            std::cout << "n (number of dimensions): ";
-            std::cin >> n;
-            std::cout << "m (size of dimensions): ";
-            std::cin >> m;
-            std::cout << "k (number of players): ";
-            std::cin >> k;
-            std::cout << "Port: ";
-            std::cin >> port;
-            g = new GameServer(n, m, k, name.c_str(), port);
+            if(c == 'n')
+            {
+                std::cout << "n (number of dimensions): ";
+                std::cin >> n;
+                std::cout << "m (size of dimensions): ";
+                std::cin >> m;
+                std::cout << "k (number of players): ";
+                std::cin >> k;
+                std::cout << "Port: ";
+                std::cin >> port;
+                g = new GameServer(n, m, k, name.c_str(), port);
+            }else
+            {
+                std::cout << "Port: ";
+                std::cin >> port;
+                g = new GameServer(name.c_str(), port);
+            }
             break;
         }
     }
