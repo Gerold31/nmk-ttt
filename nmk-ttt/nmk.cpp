@@ -21,7 +21,7 @@ uint pow(uint b, uint e)
 nmk::nmk(uint n, uint m, uint k, QString name) :
     mN(n), mM(m), mK(k), mName(name)
 {
-    mMap = new uint[pow(m, n)]{0};
+    mMap = new uint[pow(m, n)]();
     mFile.setFileName(name + ".nmk");
     mFile.open(QIODevice::Truncate | QIODevice::WriteOnly | QIODevice::Text);
     if(mFile.isOpen())
@@ -48,7 +48,7 @@ nmk::nmk(QString name) :
         in >> mN;
         in >> mM;
         in >> mK;
-        mMap = new uint[pow(mM, mN)]{0};
+        mMap = new uint[pow(mM, mN)]();
         while(!mFile.atEnd())
         {
             if(mPlayers.size() < mK)
