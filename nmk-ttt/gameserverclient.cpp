@@ -12,6 +12,12 @@ GameServerClient::GameServerClient(QTcpSocket *socket, GameServer *server)
     connect(mSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
 }
 
+GameServerClient::~GameServerClient()
+{
+    mSocket->close();
+    delete mSocket;
+}
+
 void GameServerClient::readyRead()
 {
     while(mSocket->canReadLine())

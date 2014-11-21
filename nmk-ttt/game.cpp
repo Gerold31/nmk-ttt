@@ -7,3 +7,7 @@ Game::Game(nmk *nmk):
 {
 }
 
+Game::~Game()
+{
+    delete mNmk;
+}

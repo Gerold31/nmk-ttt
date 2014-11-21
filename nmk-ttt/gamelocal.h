@@ -9,6 +9,7 @@ class GameLocal : public Game
 {
 public:
     GameLocal(uint n, uint m, uint k, QString name);
+    ~GameLocal(){}
 
 private:
     const uint mN, mM, mK;

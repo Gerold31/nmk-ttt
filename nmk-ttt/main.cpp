@@ -80,5 +80,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    return a.exec();
+    int ret = a.exec();
+    delete g;
+    return ret;
 }

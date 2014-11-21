@@ -8,6 +8,7 @@ class Game
 {
 public:
     Game(nmk *nmk);
+    virtual ~Game();
 
     virtual void run() = 0;
 

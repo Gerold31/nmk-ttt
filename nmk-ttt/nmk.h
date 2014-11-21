@@ -25,6 +25,7 @@ public:
 
     nmk(uint n, uint m, uint k, QString name);
     nmk(QString name);
+    ~nmk();
 
 
     ERROR addPlayer(QString name, uint &id, uint &session);

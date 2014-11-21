@@ -11,9 +11,11 @@ class GameClient : public QThread,  public Game
     Q_OBJECT
 public:
     GameClient(QString ip, unsigned short port, QString sessionFile);
+    ~GameClient();
 
 private slots:
     void processMsg();
+    void disconnected();
 
 private:
     uint mN;

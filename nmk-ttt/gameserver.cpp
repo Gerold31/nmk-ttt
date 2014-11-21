@@ -23,6 +23,16 @@ GameServer::GameServer(QString name, unsigned short port):
     QObject::connect(mServer, SIGNAL(newConnection()), this, SLOT(incomingConnection()));
 }
 
+GameServer::~GameServer()
+{
+    for(auto i = mClients.begin(); i!= mClients.end(); i++)
+    {
+        delete *i;
+    }
+    mServer->close();
+    delete mServer;
+}
+
 void GameServer::run()
 {
 }

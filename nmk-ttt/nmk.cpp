@@ -94,6 +94,11 @@ nmk::nmk(QString name) :
     mFile.close();
 }
 
+nmk::~nmk()
+{
+   delete[] mMap;
+}
+
 nmk::ERROR nmk::addPlayer(QString name, uint &id, uint &session)
 {
     if(mPlayers.size() == mK)

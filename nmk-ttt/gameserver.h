@@ -14,6 +14,7 @@ class GameServer : public QObject, public Game
 public:
     GameServer(uint n, uint m, uint k, QString name, unsigned short port);
     GameServer(QString name, unsigned short port);
+    ~GameServer();
 
     void processMsg(QString msg, QTcpSocket *socket);
     void removeClient(GameServerClient *client);

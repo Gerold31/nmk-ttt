@@ -14,6 +14,7 @@ GameClient::GameClient(QString ip, unsigned short port, QString sessionFile) :
     mN = -1;
     mSocket = new QTcpSocket();
     mSocket->connect(mSocket, SIGNAL(readyRead()), this, SLOT(processMsg()));
+    mSocket->connect(mSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     mSocket->connectToHost(QHostAddress(ip), port);
 
     QFile f(sessionFile);
@@ -26,16 +27,22 @@ GameClient::GameClient(QString ip, unsigned short port, QString sessionFile) :
         mSession = "";
     mSessionFileName = sessionFile;
     mMultilineAnswer = false;
+
+    if(!mSocket->waitForConnected())
+    {
+        std::cout << "Connection failed" << std::endl;
+        ::exit(0);
+    }
+}
+
+GameClient::~GameClient()
+{
+    mSocket->close();
+    delete mSocket;
 }
 
 void GameClient::run()
 {
-    if(!mSocket->waitForConnected())
-    {
-        std::cout << "Connection failed" << std::endl;
-        exit(-1);
-    }
-
     char c = 'h';
     while(1)
     {
@@ -81,6 +88,7 @@ void GameClient::run()
             break;
         case 'q':
             QCoreApplication::quit();
+            return;
             break;
         }
         //mSocket->flush();
@@ -161,4 +169,10 @@ void GameClient::processMsg()
             }
         }
     }
+}
+
+void GameClient::disconnected()
+{
+    std::cout << "Connection lost" << std::endl;
+    QCoreApplication::exit(1);
 }

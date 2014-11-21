@@ -10,6 +10,7 @@ class GameServerClient : public QObject
     Q_OBJECT
 public:
     GameServerClient(QTcpSocket *socket, GameServer *server);
+    ~GameServerClient();
 
     QTcpSocket *getSocket(){return mSocket;}
 
